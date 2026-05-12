@@ -3,55 +3,65 @@
 @tailwind utilities;
 
 :root {
-  --navy: #0B0F1A;
-  --ice: #3ABEFF;
+  --navy: #0B1020;
+  --ice:  #39BDF8;
   --gold: #FFD700;
 }
 
 html, body {
-  background: radial-gradient(ellipse at top, #131a2e 0%, #0B0F1A 60%) fixed;
+  background: radial-gradient(ellipse at 50% 0%, #121a30 0%, #0B1020 55%) fixed;
   color: white;
   min-height: 100vh;
   overflow-x: hidden;
 }
 
-@keyframes modalIn {
-  0% { opacity: 0; transform: scale(0.85) translateY(8px); }
-  100% { opacity: 1; transform: scale(1) translateY(0); }
+/* ── Case animations ──────────────────────────────────────────────────────────── */
+
+@keyframes shineSweep {
+  0%   { transform: translateX(-150%) skewX(-20deg); }
+  100% { transform: translateX(250%)  skewX(-20deg); }
 }
-.animate-modal-in { animation: modalIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+.animate-shine { animation: shineSweep 3.8s ease-in-out infinite; }
+
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 18px rgba(57,189,248,0.45), 0 0 36px rgba(57,189,248,0.18); }
+  50%      { box-shadow: 0 0 32px rgba(57,189,248,0.90), 0 0 64px rgba(57,189,248,0.38); }
+}
+.animate-pulse-glow { animation: pulseGlow 2.2s ease-in-out infinite; }
+
+/* ── Modal animations ────────────────────────────────────────────────────────── */
+
+@keyframes modalIn {
+  0%   { opacity: 0; transform: scale(0.82) translateY(10px); }
+  100% { opacity: 1; transform: scale(1)    translateY(0);    }
+}
+.animate-modal-in { animation: modalIn 0.42s cubic-bezier(0.16, 1, 0.3, 1); }
 
 @keyframes overlayIn {
-  0% { opacity: 0; }
+  0%   { opacity: 0; }
   100% { opacity: 1; }
 }
 .animate-overlay-in { animation: overlayIn 0.25s ease-out; }
 
-@keyframes pulseGlow {
-  0%, 100% { box-shadow: 0 0 18px rgba(58, 190, 255, 0.45), 0 0 36px rgba(58, 190, 255, 0.18); }
-  50%      { box-shadow: 0 0 30px rgba(58, 190, 255, 0.85), 0 0 60px rgba(58, 190, 255, 0.35); }
-}
-.animate-pulse-glow { animation: pulseGlow 2.2s ease-in-out infinite; }
-
-@keyframes fadeUp {
-  0% { opacity: 0; transform: translateY(6px) scale(0.96); }
-  100% { opacity: 1; transform: translateY(0) scale(1); }
-}
-.animate-fade-up { animation: fadeUp 0.45s cubic-bezier(0.16, 1, 0.3, 1); }
-
-@keyframes shineSweep {
-  0%   { transform: translateX(-120%) skewX(-20deg); }
-  100% { transform: translateX(220%) skewX(-20deg); }
-}
-.animate-shine { animation: shineSweep 3.5s ease-in-out infinite; }
+/* ── Ring pulse (GOAT / Elite) ───────────────────────────────────────────────── */
 
 @keyframes ringPulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.45); }
-  50%      { box-shadow: 0 0 0 14px rgba(255, 215, 0, 0); }
+  0%, 100% { box-shadow: 0 0 0 0  rgba(255,215,0,0.50); }
+  50%      { box-shadow: 0 0 0 16px rgba(255,215,0,0);  }
 }
 .animate-ring-pulse { animation: ringPulse 2.4s ease-out infinite; }
 
-::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.08); border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.15); }
+/* ── Fade-up reveal ──────────────────────────────────────────────────────────── */
+
+@keyframes fadeUp {
+  0%   { opacity: 0; transform: translateY(8px)  scale(0.94); }
+  100% { opacity: 1; transform: translateY(0)    scale(1);    }
+}
+.animate-fade-up { animation: fadeUp 0.45s cubic-bezier(0.16, 1, 0.3, 1); }
+
+/* ── Scrollbar ───────────────────────────────────────────────────────────────── */
+
+::-webkit-scrollbar          { width: 6px; height: 6px; }
+::-webkit-scrollbar-track    { background: transparent; }
+::-webkit-scrollbar-thumb    { background: rgba(255,255,255,0.07); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.14); }
