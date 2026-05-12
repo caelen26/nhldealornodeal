@@ -283,7 +283,7 @@ function StartScreen({ onStart }) {
 
           {/* Stats */}
           <div className="flex items-center gap-5 mb-11">
-            <StatPill value="26" label="Stars" />
+            <StatPill value="28" label="Stars" />
             <div className="w-px h-10 bg-white/[0.08]" />
             <StatPill value="4" label="Rounds" />
             <div className="w-px h-10 bg-white/[0.08]" />

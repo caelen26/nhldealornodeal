@@ -6,6 +6,7 @@ const RARITY_BADGE = {
   GOAT:      'bg-yellow-400/15 text-yellow-300 border-yellow-400/50',
   Elite:     'bg-purple-400/15 text-purple-200 border-purple-400/50',
   Superstar: 'bg-sky-400/15    text-sky-200    border-sky-400/50',
+  Stars:     'bg-teal-400/15   text-teal-200   border-teal-400/45',
   Solid:     'bg-slate-400/15  text-slate-200  border-slate-400/40',
   Risk:      'bg-red-500/15    text-red-300    border-red-500/40',
 };
