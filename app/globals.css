@@ -13,9 +13,20 @@ html, body {
   color: white;
   min-height: 100vh;
   overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
 }
 
-/* ── Case animations ──────────────────────────────────────────────────────────── */
+/* ── Safe-area padding (iOS home indicator) ─────────────────────────────────── */
+
+.pb-safe-6 {
+  padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+}
+
+.pb-safe-bottom {
+  padding-bottom: max(2rem, env(safe-area-inset-bottom));
+}
+
+/* ── Case animations ─────────────────────────────────────────────────────────── */
 
 @keyframes shineSweep {
   0%   { transform: translateX(-150%) skewX(-20deg); }
@@ -61,7 +72,7 @@ html, body {
 
 /* ── Scrollbar ───────────────────────────────────────────────────────────────── */
 
-::-webkit-scrollbar          { width: 6px; height: 6px; }
+::-webkit-scrollbar          { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track    { background: transparent; }
-::-webkit-scrollbar-thumb    { background: rgba(255,255,255,0.07); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.14); }
+::-webkit-scrollbar-thumb    { background: rgba(255,255,255,0.06); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.12); }

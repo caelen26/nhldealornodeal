@@ -10,171 +10,159 @@ const RARITY_BADGE = {
   Risk:      'bg-red-500/15    text-red-300    border-red-500/40',
 };
 
-function PlayerCard({ player, label }) {
-  const ring = rarityAccentGradient(player.rarity);
-  const glow = rarityGlow(player.rarity);
-  const badge = RARITY_BADGE[player.rarity] ?? RARITY_BADGE.Risk;
-
-  return (
-    <div className="flex flex-col items-center gap-3">
-      {label && (
-        <div className="text-[10px] uppercase tracking-[0.3em] font-bold text-gray-500">{label}</div>
-      )}
-      <div
-        className={`rounded-2xl p-[2px] bg-gradient-to-br ${ring}`}
-        style={{ boxShadow: `0 0 36px ${glow}` }}
-      >
-        <div className="rounded-[14px] bg-[#0B0F1A] px-6 py-5 min-w-[180px] text-center">
-          <div className="text-xl font-black text-white leading-tight">{player.name}</div>
-          <div className="text-gray-400 text-xs mt-1 font-medium">{player.team}</div>
-          <div className={`mt-2 inline-block text-[9px] uppercase tracking-[0.3em] font-black px-2.5 py-0.5 rounded-full border ${badge}`}>
-            {player.rarity}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
+const OUTCOME_CONFIG = {
+  deal: {
+    eyebrow: "You took the deal",
+    headline: "It's a Deal!",
+    sub: "You accepted the banker's offer.",
+    mainLabel: 'Your Player',
+    otherLabel: 'Your case held',
+    verdict: (beat, equal) =>
+      beat  ? 'The banker beat you — your case was worth more.'
+            : equal ? 'A perfect tie. Either way the same result.'
+            : 'Smart deal. The banker paid more than your case was worth.',
+  },
+  keep: {
+    eyebrow: "You kept your case",
+    headline: "Held Your Ground!",
+    sub: "You trusted the pick and stayed put.",
+    mainLabel: 'Your Player',
+    otherLabel: 'The other case held',
+    verdict: (beat, equal) =>
+      beat  ? 'The swap would have been better. Hindsight is 20/20.'
+            : equal ? 'Both cases were equal — solid call.'
+            : 'Your case was the better one. Well played.',
+  },
+  swap: {
+    eyebrow: "You swapped cases",
+    headline: "Took the Switch!",
+    sub: "Bold. You switched cases at the very last second.",
+    mainLabel: 'Your Player',
+    otherLabel: 'Original case held',
+    verdict: (beat, equal) =>
+      beat  ? 'The original would have been better. Risky move backfired.'
+            : equal ? 'Identical players — coin flip either way.'
+            : 'The swap paid off. Better player, better ending.',
+  },
+};
 
 export default function ResultScreen({ result, onPlayAgain }) {
-  const main  = result.player;
-  const other = result.otherPlayer;
-  const ring  = rarityAccentGradient(main.rarity);
-  const glow  = rarityGlow(main.rarity);
-  const badge = RARITY_BADGE[main.rarity] ?? RARITY_BADGE.Risk;
-
-  const config = {
-    deal: {
-      eyebrow: 'Game Over · Deal Accepted',
-      headline: "It's a Deal!",
-      sub: "You took the banker's offer and walk away with…",
-      mainLabel: 'Your Player',
-      otherLabel: 'Your case held',
-      comparison: (beat, equal) =>
-        beat  ? 'The banker beat you — your case was worth more. Ouch.'
-              : equal ? 'A perfect tie. Either way the same.'
-              : 'Smart deal. The banker paid you more than your case was worth.',
-    },
-    keep: {
-      eyebrow: 'Game Over · You Kept Your Case',
-      headline: 'Kept Your Pick!',
-      sub: 'You trusted your gut and stayed with your original case.',
-      mainLabel: 'Your Player',
-      otherLabel: 'The mystery case held',
-      comparison: (beat, equal) =>
-        beat  ? "The swap would have been better — but hindsight is 20/20."
-              : equal ? 'Both cases were equal. You made the right call.'
-              : 'Smart keep. Your case was the better one!',
-    },
-    swap: {
-      eyebrow: 'Game Over · You Swapped!',
-      headline: 'You Swapped!',
-      sub: 'Bold move. You switched cases at the very last second.',
-      mainLabel: 'Your Player (Swapped)',
-      otherLabel: 'Your original case held',
-      comparison: (beat, equal) =>
-        beat  ? "The original would have been better — risky move didn't pay off."
-              : equal ? 'Identical outcome either way. Coin flip result.'
-              : 'The swap paid off! Your new case was the better pick.',
-    },
-  }[result.kind] ?? { eyebrow: 'Game Over', headline: 'Final Reveal', sub: '', mainLabel: 'Your Player', otherLabel: null, comparison: null };
-
+  const config     = OUTCOME_CONFIG[result.kind] ?? OUTCOME_CONFIG.keep;
+  const main       = result.player;
+  const other      = result.otherPlayer;
+  const ring       = rarityAccentGradient(main.rarity);
+  const glow       = rarityGlow(main.rarity);
+  const badge      = RARITY_BADGE[main.rarity] ?? RARITY_BADGE.Risk;
   const beatOther  = other ? other.score > main.score  : false;
   const equalOther = other ? other.score === main.score : false;
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center relative overflow-hidden">
+    <div className="min-h-[100dvh] flex flex-col items-center justify-start pt-12 pb-10 px-5 text-center relative overflow-hidden">
 
       {/* Background glow */}
       <div
-        className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-[140%] h-[55%] blur-3xl rounded-full opacity-20"
-        style={{ background: `radial-gradient(ellipse, ${glow} 0%, transparent 70%)` }}
+        className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-[140%] h-[50%] blur-3xl rounded-full opacity-15"
+        style={{ background: `radial-gradient(ellipse, ${glow} 0%, transparent 65%)` }}
       />
 
+      {/* Eyebrow */}
       <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0  }}
-        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-        className="flex flex-col items-center"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="text-[10px] uppercase tracking-[0.45em] text-gray-600 font-bold mb-3 relative"
       >
-        <div className="text-[10px] uppercase tracking-[0.4em] text-gray-500 mb-3 font-bold">
-          {config.eyebrow}
-        </div>
-        <h1 className="text-5xl md:text-6xl font-black mb-2 tracking-tight text-white">
-          {config.headline}
-        </h1>
-        <p className="text-gray-400 mb-10 max-w-md text-sm md:text-base">{config.sub}</p>
+        {config.eyebrow}
       </motion.div>
+
+      {/* Headline */}
+      <motion.h1
+        initial={{ opacity: 0, y: 14 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.45, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
+        className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-white mb-2 relative"
+      >
+        {config.headline}
+      </motion.h1>
+
+      <motion.p
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.15 }}
+        className="text-gray-500 text-sm mb-8 max-w-xs relative"
+      >
+        {config.sub}
+      </motion.p>
 
       {/* Main player card */}
       <motion.div
-        initial={{ scale: 0.7, opacity: 0 }}
-        animate={{ scale: 1,   opacity: 1 }}
-        transition={{ type: 'spring', stiffness: 300, damping: 20, delay: 0.15 }}
-        className={`rounded-3xl p-[2px] bg-gradient-to-br ${ring}`}
-        style={{ boxShadow: `0 0 70px ${glow}` }}
+        initial={{ scale: 0.72, opacity: 0 }}
+        animate={{ scale: 1,    opacity: 1 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 22, delay: 0.2 }}
+        className={`rounded-3xl p-[2px] bg-gradient-to-br ${ring} relative`}
+        style={{ boxShadow: `0 0 60px ${glow}` }}
       >
-        <div className="rounded-[22px] bg-[#0B0F1A] px-10 py-8 min-w-[280px]">
-          <div className="text-[10px] uppercase tracking-[0.3em] text-gray-500 mb-2 font-bold">
+        <div className="rounded-[22px] bg-[#0A0D16] px-8 sm:px-10 py-7 sm:py-8 min-w-[260px] sm:min-w-[300px]">
+          <div className="text-[9px] uppercase tracking-[0.4em] text-gray-600 mb-3 font-bold">
             {config.mainLabel}
           </div>
-          <div className="text-3xl md:text-4xl font-black text-white leading-tight">
+          <div className="text-2xl sm:text-3xl md:text-4xl font-black text-white leading-tight">
             {main.name}
           </div>
-          <div className="text-gray-400 mt-2 font-medium">{main.team}</div>
+          <div className="text-gray-500 text-sm mt-2 font-medium">{main.team}</div>
           <div className={`mt-4 inline-block text-[10px] uppercase tracking-[0.3em] font-black px-3 py-1 rounded-full border ${badge}`}>
             {main.rarity}
           </div>
         </div>
       </motion.div>
 
-      {/* Comparison */}
-      {other && config.otherLabel && (
+      {/* Comparison panel */}
+      {other && (
         <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0  }}
-          transition={{ delay: 0.4, duration: 0.4 }}
-          className="mt-7 max-w-sm mx-auto w-full"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.42 }}
+          className="mt-5 w-full max-w-sm relative"
         >
-          <div className="px-5 py-4 rounded-2xl bg-white/[0.04] border border-white/[0.08]">
-            <div className="text-[10px] uppercase tracking-[0.25em] text-gray-500 mb-2 font-bold">
+          <div className="px-5 py-4 rounded-2xl bg-white/[0.03] border border-white/[0.07]">
+            <div className="text-[9px] uppercase tracking-[0.3em] text-gray-600 mb-3 font-bold">
               {config.otherLabel}
             </div>
-            <div className="flex items-center justify-between gap-3">
-              <div className="text-left">
-                <div className="font-bold text-white text-sm">{other.name}</div>
-                <div className="text-xs text-gray-400">{other.team}</div>
-                <div className={`mt-1 text-[9px] uppercase tracking-wider font-bold ${
-                  RARITY_BADGE[other.rarity]?.split(' ')[1] ?? 'text-gray-400'
-                }`}>
+
+            <div className="flex items-center justify-between gap-4">
+              <div className="text-left min-w-0">
+                <div className="font-bold text-white text-sm truncate">{other.name}</div>
+                <div className="text-xs text-gray-500 mt-px">{other.team}</div>
+                <div className={`mt-1.5 inline-block text-[9px] uppercase tracking-wider font-bold px-2 py-0.5 rounded border ${RARITY_BADGE[other.rarity] ?? RARITY_BADGE.Risk}`}>
                   {other.rarity}
                 </div>
               </div>
-              <div className={`text-xs font-semibold shrink-0 ${
-                beatOther ? 'text-red-400' : equalOther ? 'text-gray-400' : 'text-emerald-400'
+
+              <div className={`text-sm font-black shrink-0 ${
+                beatOther ? 'text-red-400' : equalOther ? 'text-gray-500' : 'text-emerald-400'
               }`}>
-                {beatOther ? '↑ Better' : equalOther ? '= Equal' : '↓ Worse'}
+                {beatOther ? '↑ Theirs' : equalOther ? '= Tie' : '↓ Yours'}
               </div>
             </div>
-            {config.comparison && (
-              <div className={`mt-3 text-xs font-medium border-t border-white/[0.08] pt-3 ${
-                beatOther ? 'text-red-400' : equalOther ? 'text-gray-400' : 'text-emerald-400'
-              }`}>
-                {config.comparison(beatOther, equalOther)}
-              </div>
-            )}
+
+            <div className={`mt-3 text-xs font-medium pt-3 border-t border-white/[0.07] ${
+              beatOther ? 'text-red-400' : equalOther ? 'text-gray-500' : 'text-emerald-400'
+            }`}>
+              {config.verdict(beatOther, equalOther)}
+            </div>
           </div>
         </motion.div>
       )}
 
+      {/* Play again */}
       <motion.button
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.6 }}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
+        whileHover={{ scale: 1.04 }}
+        whileTap={{ scale: 0.96 }}
         onClick={onPlayAgain}
-        className="mt-10 px-10 py-4 rounded-full bg-gradient-to-b from-ice to-blue-600 text-white font-black uppercase tracking-[0.25em] text-sm shadow-[0_10px_30px_rgba(58,190,255,0.45)]"
+        className="mt-8 px-12 py-4 rounded-full bg-gradient-to-b from-ice to-blue-600 text-white font-black uppercase tracking-[0.25em] text-sm shadow-[0_12px_32px_rgba(58,190,255,0.4),inset_0_1px_0_rgba(255,255,255,0.25)]"
       >
         Play Again
       </motion.button>
