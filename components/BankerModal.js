@@ -11,11 +11,39 @@ const RARITY_BADGE = {
   Risk:      'bg-red-500/15    text-red-300    border-red-500/40',
 };
 
-export default function BankerModal({ offer, onDeal, onNoDeal, round }) {
+function bankerCommentary(stats) {
+  const { topTierProb, premiumProb, multiplier } = stats;
+  if (topTierProb >= 0.35)
+    return { text: "The odds are stacked in your favor. I'm overpaying and we both know it.", color: 'text-emerald-400' };
+  if (topTierProb >= 0.20)
+    return { text: "Real shot at Elite talent in there. My offer reflects the risk I'm taking.", color: 'text-sky-400' };
+  if (topTierProb >= 0.08)
+    return { text: "Slim chance at something elite. Could go either way — I'd take the deal.", color: 'text-amber-400' };
+  if (premiumProb >= 0.65)
+    return { text: "Premium pool remaining. I'm paying up for that uncertainty.", color: 'text-teal-400' };
+  if (premiumProb < 0.25)
+    return { text: "The good ones are gone. You know it, I know it. Take the offer.", color: 'text-red-400' };
+  if (multiplier >= 0.90)
+    return { text: "We're deep into the game. This is my fairest offer yet.", color: 'text-gray-300' };
+  return { text: "Balanced odds. A reasonable case for staying in — or cashing out.", color: 'text-gray-400' };
+}
+
+function ProbChip({ label, prob, color }) {
+  const pct = Math.round(prob * 100);
+  return (
+    <div className="flex flex-col items-center px-4 py-2 rounded-xl bg-white/[0.04] border border-white/[0.06] gap-0.5 min-w-[80px]">
+      <span className={`text-xl font-black tabular-nums leading-none ${color}`}>{pct}%</span>
+      <span className="text-[9px] text-gray-500 uppercase tracking-wider font-bold mt-0.5">{label}</span>
+    </div>
+  );
+}
+
+export default function BankerModal({ offer, stats, onDeal, onNoDeal, round }) {
   const accent    = rarityAccentGradient(offer.rarity);
   const glow      = rarityGlow(offer.rarity);
   const ringPulse = rarityRingPulse(offer.rarity);
   const badge     = RARITY_BADGE[offer.rarity] ?? RARITY_BADGE.Risk;
+  const comment   = stats ? bankerCommentary(stats) : null;
 
   return (
     <motion.div
@@ -32,13 +60,9 @@ export default function BankerModal({ offer, onDeal, onNoDeal, round }) {
 
         {/* Phone call header */}
         <div className="px-6 pt-6 pb-5 text-center border-b border-white/[0.07] relative">
-
-          {/* Round label */}
           <div className="text-[10px] uppercase tracking-[0.45em] text-gray-600 font-bold mb-4">
             Round {round} · Banker Is Calling
           </div>
-
-          {/* Animated phone */}
           <div className="flex items-center justify-center gap-4 mb-4">
             <div className="flex-1 h-px bg-gradient-to-r from-transparent to-white/[0.08]" />
             <motion.div
@@ -50,8 +74,6 @@ export default function BankerModal({ offer, onDeal, onNoDeal, round }) {
             </motion.div>
             <div className="flex-1 h-px bg-gradient-to-l from-transparent to-white/[0.08]" />
           </div>
-
-          {/* Ringing dots */}
           <div className="flex items-center justify-center gap-1.5 mb-4">
             {[0, 0.2, 0.4].map((delay, i) => (
               <motion.div
@@ -62,17 +84,15 @@ export default function BankerModal({ offer, onDeal, onNoDeal, round }) {
               />
             ))}
           </div>
-
           <h3 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
             Banker Offer
           </h3>
-
           <div className="absolute -bottom-px left-1/2 -translate-x-1/2 h-px w-28 bg-gradient-to-r from-transparent via-red-400/60 to-transparent" />
         </div>
 
         {/* Offer reveal */}
-        <div className="px-6 pt-6 pb-4 text-center">
-          <p className="text-[11px] uppercase tracking-[0.3em] text-gray-600 font-semibold mb-5">
+        <div className="px-6 pt-5 pb-3 text-center">
+          <p className="text-[11px] uppercase tracking-[0.3em] text-gray-600 font-semibold mb-4">
             In exchange for your case…
           </p>
 
@@ -85,7 +105,7 @@ export default function BankerModal({ offer, onDeal, onNoDeal, round }) {
             className={`mx-auto rounded-2xl bg-gradient-to-br ${accent} p-[2px]`}
           >
             <div
-              className="rounded-[14px] bg-[#0A0D16] px-5 py-6 relative overflow-hidden"
+              className="rounded-[14px] bg-[#0A0D16] px-5 py-5 relative overflow-hidden"
               style={{ boxShadow: `inset 0 0 40px ${glow.replace(')', ', 0.07)').replace('rgba(', 'rgba(')}` }}
             >
               <div
@@ -103,14 +123,34 @@ export default function BankerModal({ offer, onDeal, onNoDeal, round }) {
               </div>
             </div>
           </motion.div>
-
-          <p className="text-xs text-gray-600 mt-5 leading-relaxed">
-            Accept and walk away, or keep your case and play on.
-          </p>
         </div>
 
+        {/* Probability breakdown */}
+        {stats && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.22 }}
+            className="mx-5 mb-3 px-4 py-3.5 rounded-2xl bg-white/[0.03] border border-white/[0.06]"
+          >
+            <div className="text-[10px] uppercase tracking-[0.35em] text-gray-600 font-bold mb-3 text-center">
+              Your Case · {stats.sealedCount} Sealed
+            </div>
+            <div className="flex gap-2.5 justify-center mb-3">
+              <ProbChip label="Elite+" prob={stats.topTierProb}  color="text-purple-300" />
+              <ProbChip label="Stars+" prob={stats.premiumProb}  color="text-teal-300"   />
+              <ProbChip label="Offer %" prob={stats.multiplier}  color="text-amber-300"  />
+            </div>
+            {comment && (
+              <p className={`text-xs font-medium text-center leading-snug ${comment.color}`}>
+                {comment.text}
+              </p>
+            )}
+          </motion.div>
+        )}
+
         {/* Buttons */}
-        <div className="px-6 pb-6 pb-safe grid grid-cols-2 gap-3">
+        <div className="px-5 pb-safe-6 grid grid-cols-2 gap-3 mt-1">
           <motion.button
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.94 }}

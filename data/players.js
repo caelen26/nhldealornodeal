@@ -21,7 +21,6 @@ export const NHL_PLAYERS = [
   { name: 'Wyatt Johnston',      team: 'Dallas Stars',          score: 86,  rarity: 'Stars'     },
   { name: 'Lane Hutson',         team: 'Montreal Canadiens',    score: 85,  rarity: 'Stars'     },
   // Solid
-  { name: 'Brandon Hagel',       team: 'Tampa Bay Lightning',   score: 84,  rarity: 'Solid'     },
   { name: 'Nick Schmaltz',       team: 'Utah Mammoth',          score: 83,  rarity: 'Solid'     },
   { name: 'Bo Horvat',           team: 'New York Islanders',    score: 82,  rarity: 'Solid'     },
   { name: 'Seth Jarvis',         team: 'Carolina Hurricanes',   score: 81,  rarity: 'Solid'     },
@@ -32,7 +31,6 @@ export const NHL_PLAYERS = [
   { name: 'Logan Stanley',       team: 'Buffalo Sabres',        score: 77,  rarity: 'Risk'      },
   { name: 'Jonathan Huberdeau',  team: 'Calgary Flames',        score: 76,  rarity: 'Risk'      },
   { name: 'Nikita Zadorov',      team: 'Boston Bruins',         score: 75,  rarity: 'Risk'      },
-  { name: 'Mason Appleton',      team: 'Detroit Red Wings',     score: 74,  rarity: 'Risk'      },
 ];
 
 export function rarityAccentGradient(rarity) {

@@ -9,7 +9,6 @@ import SwapModal from './SwapModal';
 import ResultScreen from './ResultScreen';
 
 const ROUND_BREAKPOINTS = [5, 10, 15, 20];
-const BASE_MULTIPLIERS  = [0.52, 0.68, 0.82, 0.94];
 const SWAP_TRIGGER = 24;
 
 function shuffle(array) {
@@ -37,12 +36,39 @@ function pickClosestPlayer(target) {
 
 function computeBankerOffer(remaining, roundIndex) {
   if (remaining.length === 0) return null;
-  const avg = remaining.reduce((s, c) => s + c.player.score, 0) / remaining.length;
-  const topCount = remaining.filter((c) => c.player.score >= 86).length;
-  const topBonus = (topCount / remaining.length) * 0.20;
-  const base       = BASE_MULTIPLIERS[roundIndex] ?? 0.94;
-  const multiplier = Math.min(base + topBonus, 1.06);
-  return pickClosestPlayer(avg * multiplier);
+
+  const scores = remaining.map(c => c.player.score);
+  const ev     = scores.reduce((s, x) => s + x, 0) / scores.length;
+
+  // Probability that player's sealed case is Elite or GOAT
+  const topCount    = remaining.filter(c => c.player.rarity === 'GOAT' || c.player.rarity === 'Elite').length;
+  const topTierProb = topCount / remaining.length;
+
+  // Probability of Stars or above
+  const premiumCount = remaining.filter(c =>
+    ['GOAT', 'Elite', 'Superstar', 'Stars'].includes(c.player.rarity)
+  ).length;
+  const premiumProb = premiumCount / remaining.length;
+
+  // Standard deviation: high variance = banker lowers offer to exploit uncertainty
+  const variance     = scores.reduce((s, x) => s + (x - ev) ** 2, 0) / scores.length;
+  const stdDev       = Math.sqrt(variance);
+  const variancePenalty = Math.min((stdDev / 25) * 0.10, 0.10);
+
+  // Elite/GOAT concentration bonus (up to +10%)
+  const topBonus     = topTierProb * 0.10;
+  // Premium-heavy pool bonus (kicks in when >50% of sealed cases are Stars+)
+  const premiumBonus = Math.max(0, premiumProb - 0.5) * 0.10;
+
+  // Base multiplier ramps up each round: R1=55%, R2=70%, R3=85%, R4=95%
+  const BASE_MULTIPLIERS = [0.55, 0.70, 0.85, 0.95];
+  const base       = BASE_MULTIPLIERS[roundIndex] ?? 0.95;
+  const multiplier = Math.min(Math.max(base - variancePenalty + topBonus + premiumBonus, 0.40), 1.08);
+
+  return {
+    offer: pickClosestPlayer(ev * multiplier),
+    stats: { topTierProb, premiumProb, sealedCount: remaining.length, multiplier, ev },
+  };
 }
 
 export default function GameBoard() {
@@ -51,6 +77,7 @@ export default function GameBoard() {
   const [playerCaseId, setPlayerCaseId] = useState(null);
   const [openedOrder, setOpenedOrder]   = useState([]);
   const [bankerOffer, setBankerOffer]   = useState(null);
+  const [bankerStats, setBankerStats]   = useState(null);
   const [roundIndex, setRoundIndex]     = useState(0);
   const [endResult, setEndResult]       = useState(null);
   const [swapCaseData, setSwapCaseData] = useState(null);
@@ -61,6 +88,7 @@ export default function GameBoard() {
     setPlayerCaseId(null);
     setOpenedOrder([]);
     setBankerOffer(null);
+    setBankerStats(null);
     setRoundIndex(0);
     setEndResult(null);
     setSwapCaseData(null);
@@ -105,8 +133,8 @@ export default function GameBoard() {
       setTimeout(() => {
         const openedIds = new Set(nextOpened);
         const remaining = nextCases.filter((c) => !openedIds.has(c.id));
-        const offer     = computeBankerOffer(remaining, roundIndex);
-        if (offer) { setBankerOffer(offer); setPhase('banker'); }
+        const result = computeBankerOffer(remaining, roundIndex);
+        if (result) { setBankerOffer(result.offer); setBankerStats(result.stats); setPhase('banker'); }
       }, 750);
       return;
     }
@@ -129,6 +157,7 @@ export default function GameBoard() {
 
   const handleNoDeal = () => {
     setBankerOffer(null);
+    setBankerStats(null);
     setRoundIndex((i) => i + 1);
     setPhase('opening');
   };
@@ -213,7 +242,7 @@ export default function GameBoard() {
       </div>
 
       {phase === 'banker' && bankerOffer && (
-        <BankerModal offer={bankerOffer} onDeal={handleDeal} onNoDeal={handleNoDeal} round={roundIndex + 1} />
+        <BankerModal offer={bankerOffer} stats={bankerStats} onDeal={handleDeal} onNoDeal={handleNoDeal} round={roundIndex + 1} />
       )}
 
       {phase === 'swap' && swapCaseData && (
@@ -283,7 +312,7 @@ function StartScreen({ onStart }) {
 
           {/* Stats */}
           <div className="flex items-center gap-5 mb-11">
-            <StatPill value="28" label="Stars" />
+            <StatPill value="26" label="Stars" />
             <div className="w-px h-10 bg-white/[0.08]" />
             <StatPill value="4" label="Rounds" />
             <div className="w-px h-10 bg-white/[0.08]" />
